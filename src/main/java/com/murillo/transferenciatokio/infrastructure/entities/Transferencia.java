@@ -1,6 +1,6 @@
 package com.murillo.transferenciatokio.infrastructure.entities;
 
-import com.murillo.transferenciatokio.controller.dto.TransferenciaDTO;
+import com.murillo.transferenciatokio.dto.TransferenciaDTO;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;

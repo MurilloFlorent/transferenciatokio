@@ -1,12 +1,14 @@
 package com.murillo.transferenciatokio.business.services;
 
-import com.murillo.transferenciatokio.controller.dto.TransferenciaDTO;
-import com.murillo.transferenciatokio.controller.dto.TransferenciaResponseDTO;
+import com.murillo.transferenciatokio.dto.TransferenciaDTO;
+import com.murillo.transferenciatokio.dto.TransferenciaResponseDTO;
 import com.murillo.transferenciatokio.infrastructure.entities.Transferencia;
 import com.murillo.transferenciatokio.repositories.TransferenciaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -19,6 +21,7 @@ public class TransferenciaService {
 
     public TransferenciaResponseDTO agendarTransferencia(TransferenciaDTO transferenciaDTO) {
         Transferencia transferencia = new Transferencia(transferenciaDTO);
+        verificaDatas(transferencia.getDataTransferencia(), transferencia.getDataAgendamento());
         Double valorTaxado = calcularTaxa(transferencia.getDataTransferencia(), transferencia.getDataAgendamento(), transferencia.getValorTransferencia());
         transferencia.setValorTransferencia(valorTaxado);
 
@@ -54,10 +57,21 @@ public class TransferenciaService {
         } else if (dias >= 41 && dias <= 50) {
             taxaVariavel = 0.017;
         } else {
-            throw new IllegalArgumentException("Erro: Não há taxa aplicável para esse prazo de transferência.");
+            throw new IllegalArgumentException(" Não há taxa aplicável para esse prazo de transferência.");
         }
+        valorTransferencia = valorTransferencia + taxaFixa + (taxaVariavel * valorTransferencia);
 
-        return taxaFixa + (taxaVariavel * valorTransferencia);
+        return valorTransferencia;
     };
+
+    private void verificaDatas(Date dataTransferencia, Date dataAgendamento) {
+        LocalDate localDataTransferencia = dataTransferencia.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+
+        LocalDate localDataAgendamento = dataAgendamento.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+
+        if (localDataTransferencia.isBefore(localDataAgendamento)) {
+            throw new IllegalArgumentException(" A data da transferência não pode ser anterior à data de agendamento.");
+        }
+    }
 
 }
